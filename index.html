@@ -1,0 +1,141 @@
+
+
+<!doctype html>
+<html lang="en">
+<head>
+
+	<meta charset="utf-8" />
+	<title>Twitter Image Hack</title>
+
+
+	<meta property="og:site_name" content="Twitter Image Hack" />
+	<meta property="og:type" content="website" />
+
+	<meta property="og:title" content="Twitter Image Hack" />
+
+	<meta name="twitter:card" content="summary">
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+
+
+	<style type="text/css" media="screen"><!--
+		* { box-sizing: border-box; }
+		body {margin: 0; padding: 0; font-family: Verdana,Geneva,sans-serif;}
+		#outer { position: absolute; display: table; width: 100%; height: 99%; margin: 0 auto; }
+		#upper { display: table-row; width: 100%; height: 85%; }
+		#lower { display: table-row; width: 100%; height: 15%; max-height: 90px; }
+		#content { position: relative; display: table-cell; vertical-align: middle; text-align: center; }
+		#footer { position: relative; display: table-cell; vertical-align: bottom; text-align: center; }
+		.big { font-size: 36pt; }
+		.small { font-size: 14pt; }
+
+	--></style>
+
+</head>
+<body bgcolor="#ffffff">
+	<div id="outer">
+		<div id="upper">
+			<div id="content">
+				<span class="big">Select File</span>
+				<br />
+								<br />
+
+				<input id="yourinputname" type="file" name="yourinputname"  />
+				<br />
+				<br />
+
+                <span class="small"> This edits an image file to insert 1 transparent pixel for Twitter reasons. 
+				<script>
+
+				    // hastily stolen from http://ravenworks.ca/twitimagefix/
+				    // because my girlfriend needed it and the "drag the file" thing of that website was broken for whatever reason
+				    // so i just made it an <input> really quickly 
+					var workCan = document.createElement('canvas');
+					var workCtx = workCan.getContext('2d');
+
+
+					document.getElementById('yourinputname').onchange = function() {
+					    // fire the upload here
+
+					    var fullPath = document.getElementById("yourinputname").value;
+					    if (fullPath) {
+					    	var startIndex = (fullPath.indexOf('\\') >= 0 ? fullPath.lastIndexOf('\\') : fullPath.lastIndexOf('/'));
+					    	var filename = fullPath.substring(startIndex);
+					    	if (filename.indexOf('\\') === 0 || filename.indexOf('/') === 0) {
+					    		filename = filename.substring(1);
+					    	}
+					    }
+					    droppedFilename = filename;
+					    var suffixDotIndex = droppedFilename.lastIndexOf('.');
+					    var newFilename = droppedFilename.substr(0,suffixDotIndex)+"_TWITSAFE.png";
+
+					    var file = new FileReader();
+					    file.onload = function(){
+
+					    	droppedImage = new Image();
+					    	droppedImage.onerror = function(){
+					    		alert("That doesn't seem to be an image...");
+					    	}
+					    	droppedImage.onload = function(){
+
+					    		workCan.width = droppedImage.width;
+					    		workCan.height = droppedImage.height;
+
+					    		workCtx.drawImage(droppedImage,0,0);
+					    		var pix = workCtx.getImageData(0,0,1,1);
+					    		if (pix.data[3] < 255) {
+					    			alert("This image already has transparency, you don't need to do anything with it.");
+					    			return;
+					    		}
+					    		pix.data[3] = 001;
+					    		workCtx.putImageData(pix,0,0);
+
+										/*
+										downloadDiv.href = workCan.toDataURL("image/png");
+										downloadDiv.download = newFilename;
+										
+										uploadDiv.style.display = "none";
+										downloadDiv.style.display = "block";
+										*/
+										
+										// turns out that can be automated (see below)
+										// but I'm leaving the source in place in case
+										// this trick stops working or something
+										
+										//http://stackoverflow.com/a/20194533
+										// var dl = document.createElement('a');
+										// dl.href = workCan.toDataURL("image/png");
+										// dl.download = newFilename;
+										
+										// document.body.appendChild(dl);
+										// dl.click();
+										// document.body.removeChild(dl);
+
+										data = workCan.toDataURL("image/png")
+										var blob = new Blob([data], {type: 'image/png'});
+										if(window.navigator.msSaveOrOpenBlob) {
+											window.navigator.msSaveBlob(blob, newFilename);
+										}
+										else{
+											var elem = window.document.createElement('a');
+											elem.href = workCan.toDataURL("image/png")
+											elem.download = newFilename;        
+											document.body.appendChild(elem);
+											elem.click();        
+											document.body.removeChild(elem);
+											
+										}										
+									}
+									droppedImage.src = file.result;
+								}
+								file.readAsDataURL(document.getElementById("yourinputname").files[0]);
+							};
+	</script>
+
+</div>		
+</div>
+<div id="lower">
+	<div id="footer">
+	</div>
+</div>
+</div>
+</html>
